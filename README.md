@@ -1,4 +1,6 @@
-1. The Rules of Euchre (Simplified)
+The Rules of Euchre (Simplified)
+
+
 Euchre is a trick-taking card game played with a partial deck. Here is how the "EECS 280" version works:
 
 The Deck: You only use 24 cards: 9, 10, Jack, Queen, King, Ace of each suit (Spades, Hearts, Diamonds, Clubs).

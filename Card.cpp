@@ -118,6 +118,21 @@ Suit Card::get_suit(Suit trump) const{
   }
 }
 
+bool Card::is_face_or_ace() const{
+  return rank >= JACK;
+}
+
+bool Card::is_right_bower(Suit trump) const{
+  return rank == JACK && suit == trump;
+}
+
+bool Card::is_left_bower(Suit trump) const{
+  return rank == JACK && suit == Suit((trump + 2) % 4);
+}
+
+bool Card::is_trump(Suit trump) const{
+  return suit == trump || is_left_bower(trump);
+}
 
 
 
