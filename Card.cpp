@@ -135,7 +135,36 @@ bool Card::is_trump(Suit trump) const{
   return suit == trump || is_left_bower(trump);
 }
 
+std::ostream & operator<<(std::ostream &os, const Card &card){
+  os<< card.get_rank() << " of " << card.get_suit();
+  return os; 
+}
 
+std::istream & operator>>(std::istream &is, Card &card){
+  Rank rank; 
+  Suit suit; 
+  if (is >> rank >> suit){
+    card.rank = rank; 
+    card.suit = suit; 
+    return is; 
+  }
+}
+
+bool operator< (const Card &lhs, const Card &rhs){
+  if (lhs.get_rank() < rhs.get_rank()){
+    return true; 
+  } else {
+    return false; 
+  }
+}
+
+bool operator<=(const Card &lhs, const Card &rhs){
+  if (lhs.get_rank() <= rhs.get_rank()){
+    return true;
+  } else {
+    return false;
+  }
+}
 
 // NOTE: We HIGHLY recommend you check out the operator overloading
 // tutorial in the project spec before implementing
