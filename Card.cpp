@@ -218,11 +218,22 @@ bool Card_less(const Card &a, const Card &b, Suit trump){
   }
 }
 
-
-
-
-
-bool Card_less(const Card &a, const Card &b, const Card &led_card, Suit trump);
+bool Card_less(const Card &a, const Card &b, const Card &led_card, Suit trump){
+  if(a.get_rank() < b.get_rank() && a.get_suit(led_card.get_suit()) == led_card.get_suit()){
+    return true; 
+  } else {
+    return false;
+  } 
+  if (a.get_rank() < b.get_rank() && a.is_trump(trump) && !b.is_trump(trump)){
+    return false;
+  } else if (a.get_rank() < b.get_rank() && !a.is_trump(trump) && b.is_trump(trump)){
+    return true;
+  } else if (a.get_rank() < b.get_rank() && a.is_trump(trump) && b.is_trump(trump)){
+    return true;
+  } else {
+    return false;
+  }
+}
 
 // NOTE: We HIGHLY recommend you check out the operator overloading
 // tutorial in the project spec before implementing
