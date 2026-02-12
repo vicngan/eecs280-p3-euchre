@@ -198,7 +198,32 @@ bool operator !=(const Card &lhs, const Card &rhs){
     }
   }
 
-  
+Suit Suit_next(Suit suit){
+  switch (suit){
+    case SPADES:
+      return HEARTS;
+    case HEARTS:
+      return SPADES;
+    case CLUBS:
+      return DIAMONDS;
+    case DIAMONDS:
+      return CLUBS; 
+  }
+}
+bool Card_less(const Card &a, const Card &b, Suit trump){
+  if(a.is_trump(trump) && !b.is_trump(trump)){
+    return false;
+  } else if (!a.is_trump(trump) && b.is_trump(trump)){
+    return true;
+  }
+}
+
+
+
+
+
+bool Card_less(const Card &a, const Card &b, const Card &led_card, Suit trump);
+
 // NOTE: We HIGHLY recommend you check out the operator overloading
 // tutorial in the project spec before implementing
 // the following operator overload functions:
