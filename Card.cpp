@@ -119,7 +119,7 @@ Suit Card::get_suit(Suit trump) const{
 }
 
 bool Card::is_face_or_ace() const{
-  return rank >= JACK;
+  return (rank == JACK || rank == QUEEN || rank == KING || rank == ACE);
 }
 
 bool Card::is_right_bower(Suit trump) const{
@@ -127,7 +127,8 @@ bool Card::is_right_bower(Suit trump) const{
 }
 
 bool Card::is_left_bower(Suit trump) const{
-  return rank == JACK && suit == Suit((trump + 2) % 4);
+  Suit next_suit = Suit_next(trump);
+  return rank == JACK && suit == next_suit;
 }
 
 bool Card::is_trump(Suit trump) const{
