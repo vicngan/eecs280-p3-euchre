@@ -166,6 +166,39 @@ bool operator<=(const Card &lhs, const Card &rhs){
   }
 }
 
+bool operator> (const Card &lhs, const Card &rhs){
+  if (lhs.get_rank() > rhs.get_rank()){
+    return true;
+  } else {
+    return false;
+  }
+}
+
+bool operator>= (const Card &lhs, const Card &rhs){
+  if (lhs.get_rank() >= rhs.get_rank()){
+    return true;
+  } else {
+    return false;
+  }
+}
+
+bool operator==(const Card &lhs, const Card &rhs){
+  if (lhs.get_rank() == rhs.get_rank()){
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+bool operator !=(const Card &lhs, const Card &rhs){
+  if (lhs.get_rank() != rhs.get_rank()){
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  
 // NOTE: We HIGHLY recommend you check out the operator overloading
 // tutorial in the project spec before implementing
 // the following operator overload functions:
