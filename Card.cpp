@@ -102,6 +102,22 @@ Card::Card(Rank rank_in, Suit suit_in){
   suit = suit_in;
 }
 
+Rank Card::get_rank() const{
+  return rank;
+}
+
+Suit Card::get_suit() const{
+  return suit;
+}
+
+Suit Card::get_suit(Suit trump) const{
+  if (is_left_bower(trump)){
+    return trump;
+  } else {
+    return suit;
+  }
+}
+
 
 
 
