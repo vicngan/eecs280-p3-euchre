@@ -92,6 +92,17 @@ std::istream & operator>>(std::istream &is, Suit &suit) {
 
 
 /////////////// Write your implementation for Card below ///////////////
+Card::Card() {
+  rank = TWO;
+  suit = SPADES; 
+}
+
+Card::Card(Rank rank_in, Suit suit_in){
+  rank = rank_in;
+  suit = suit_in;
+}
+
+
 
 
 // NOTE: We HIGHLY recommend you check out the operator overloading
