@@ -25,4 +25,24 @@ Pack::Pack(std::istream& pack_input){
     }
 }
 
+Card Pack::deal_one(){
+    Card next_card = cards[next];
+    next++;
+    return next_card;
+}
+
+void Pack::reset(){
+    next= 0;
+}
+
+void Pack::shuffle(){
+    for (int i = 0; i < 7; ++i){
+        for (int j = 0; j < PACK_SIZE/2; ++j){
+            
+        })
+    }
+}
+
+
+
 
