@@ -1,4 +1,6 @@
 #include "Pack.hpp"
+#include <algorithm>
+#include <array>
 
 Pack::Pack(){
     int index = 0; 
@@ -35,13 +37,26 @@ void Pack::reset(){
     next= 0;
 }
 
-void Pack::shuffle(){
-    for (int i = 0; i < 7; ++i){
-        for (int j = 0; j < PACK_SIZE/2; ++j){
-            
-        })
+void Pack::shuffle(){ 
+    const int PACK_SIZE = 24;
+    std::array<Card, PACK_SIZE> shuffled_cards;
+    
+    for (int i = 0; i < 7; ++i){ //run outer loop 7 times 
+        for (int j = 0; j < PACK_SIZE/2; ++j){ //inner loop swap cards in top half [:size/2] with bottom [size/2:size]
+            std::swap(cards[j], cards[PACK_SIZE/2 +j]);
+        }
     }
 }
+
+bool Pack::empty() const{
+    if (next >= PACK_SIZE){ //if next index is bigger/equal to size, then pack is empty 
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
 
 
 
