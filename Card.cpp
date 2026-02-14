@@ -146,8 +146,8 @@ std::istream & operator>>(std::istream &is, Card &card){
   if (is >> rank >> suit){
     card.rank = rank; 
     card.suit = suit; 
-    return is; 
   }
+  return is; 
 }
 
 bool operator< (const Card &lhs, const Card &rhs){
@@ -208,6 +208,9 @@ Suit Suit_next(Suit suit){
       return DIAMONDS;
     case DIAMONDS:
       return CLUBS; 
+    default:
+      assert(false);
+      return SPADES;
   }
 }
 bool Card_less(const Card &a, const Card &b, Suit trump){
@@ -215,22 +218,28 @@ bool Card_less(const Card &a, const Card &b, Suit trump){
     return false;
   } else if (!a.is_trump(trump) && b.is_trump(trump)){
     return true;
+  } else if (a.is_trump(trump) && b.is_trump(trump)){
+    return a.get_rank() < b.get_rank();
+  } else { //if neither is a trump , then compare rank 
+    return a.get_rank() < b.get_rank(); 
   }
 }
 
+
 bool Card_less(const Card &a, const Card &b, const Card &led_card, Suit trump){
   if(a.get_rank() < b.get_rank() && a.get_suit(led_card.get_suit()) == led_card.get_suit()){
+    return a.get_rank() < b.get_rank(); 
+  } if (a.get_suit() == led_card.get_suit()){
+    return false;
+  } else if (b.get_suit() == led_card.get_suit()){
     return true; 
-  } else {
+  } if(a.is_trump(trump) && !b.is_trump(trump)){
     return false;
-  } 
-  if (a.get_rank() < b.get_rank() && a.is_trump(trump) && !b.is_trump(trump)){
-    return false;
-  } else if (a.get_rank() < b.get_rank() && !a.is_trump(trump) && b.is_trump(trump)){
-    return true;
-  } else if (a.get_rank() < b.get_rank() && a.is_trump(trump) && b.is_trump(trump)){
-    return true;
-  } else {
+  } else if(!a.is_trump(trump) && b.is_trump(trump)){
+    return true; 
+  } else if (a.is_trump(trump) && b.is_trump(trump)){
+    return a.get_rank() < b.get_rank();
+  } else{
     return false;
   }
 }
