@@ -12,24 +12,6 @@ TEST(test_pack_default_ctor) {
     ASSERT_EQUAL(SPADES, first.get_suit());
 }
 
-// Add more tests here
-
-TEST_MAIN()
-#include "Pack.hpp"
-#include "unit_test_framework.hpp"
-
-#include <iostream>
-
-using namespace std;
-
-TEST(test_pack_default_ctor) {
-    Pack pack;
-    Card first = pack.deal_one();
-    ASSERT_EQUAL(NINE, first.get_rank());
-    ASSERT_EQUAL(SPADES, first.get_suit());
-    
-}
-
 TEST(test_pack_deal_one_increments) {
     Pack pack;
     Card c1 = pack.deal_one();
@@ -77,3 +59,6 @@ TEST(test_pack_shuffle_resets_next) {
 
     Card after_shuffle_first = pack.deal_one();
     Card fresh_first = fresh.deal_one();
+}
+
+TEST_MAIN()
