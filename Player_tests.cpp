@@ -12,6 +12,6 @@ TEST(test_player_get_name) {
     delete alice;
 }
 
-// Add more tests here
+
 
 TEST_MAIN()
