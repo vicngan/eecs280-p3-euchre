@@ -142,61 +142,46 @@ std::ostream & operator<<(std::ostream &os, const Card &card){
 
 std::istream & operator>>(std::istream &is, Card &card){
   Rank rank; 
+  std:: string of;
   Suit suit; 
-  if (is >> rank >> suit){
+  if (is >> rank >> of >> suit){
+    assert(of == "of");
     card.rank = rank; 
     card.suit = suit; 
   }
   return is; 
+
+
 }
 
-bool operator< (const Card &lhs, const Card &rhs){
-  if (lhs.get_rank() < rhs.get_rank()){
-    return true; 
-  } else {
-    return false; 
-  }
+bool operator==(const Card &lhs, const Card &rhs) {
+    return lhs.get_rank() == rhs.get_rank() &&
+           lhs.get_suit() == rhs.get_suit();
 }
 
-bool operator<=(const Card &lhs, const Card &rhs){
-  if (lhs.get_rank() <= rhs.get_rank()){
-    return true;
-  } else {
-    return false;
-  }
+bool operator!=(const Card &lhs, const Card &rhs) {
+    return !(lhs == rhs);
 }
 
-bool operator> (const Card &lhs, const Card &rhs){
-  if (lhs.get_rank() > rhs.get_rank()){
-    return true;
-  } else {
-    return false;
-  }
-}
-
-bool operator>= (const Card &lhs, const Card &rhs){
-  if (lhs.get_rank() >= rhs.get_rank()){
-    return true;
-  } else {
-    return false;
-  }
-}
-
-bool operator==(const Card &lhs, const Card &rhs){
-  if (lhs.get_rank() == rhs.get_rank()){
-      return true;
-    } else {
-      return false;
+bool operator<(const Card &lhs, const Card &rhs) {
+    if (lhs.get_rank() != rhs.get_rank()) {
+        return lhs.get_rank() < rhs.get_rank();
     }
-  }
+    return lhs.get_suit() < rhs.get_suit();
+}
 
-bool operator !=(const Card &lhs, const Card &rhs){
-  if (lhs.get_rank() != rhs.get_rank()){
-      return true;
-    } else {
-      return false;
-    }
-  }
+bool operator<=(const Card &lhs, const Card &rhs) {
+    return !(rhs < lhs);
+}
+
+bool operator>(const Card &lhs, const Card &rhs) {
+    return rhs < lhs;
+}
+
+bool operator>=(const Card &lhs, const Card &rhs) {
+    return !(lhs < rhs);
+}
+
 
 Suit Suit_next(Suit suit){
   switch (suit){
