@@ -57,9 +57,13 @@ public:
     }
     //lead card with highest suit (trump > non-trump) and rank
     Card lead_card(Suit trump) override {
-        std::sort(hand.begin(), hand.end(), [&](const Card &a, const Card &b){
-            return Card_less(a,b , trump);
+        assert(!hand.empty());
+
+        std::sort(hand.begin(), hand.end(),
+        [&](const Card &a, const Card &b){
+            return Card_less(a, b, trump);
         });
+
         for (const Card &c :hand){
             if(c.is_trump(trump)){
                 //play highest trump card
@@ -73,6 +77,9 @@ public:
                 return lead;
             }
         }
+        Card lead = hand.back();
+        hand.pop_back();
+        return lead;
     }
     //play card when someone already led, otherwise play lowest
     Card play_card (const Card &led_card, Suit trump) override {
