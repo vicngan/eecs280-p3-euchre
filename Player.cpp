@@ -25,35 +25,46 @@ public:
     }
     //make trump if have two or more trump cards, otherwise pass
     bool make_trump(const Card &upcard, bool is_dealer, int round, Suit &order_up_suit) const override{
-        int trump_count = 0;
-        for (const Card &c : hand){
-            if (c.is_trump(upcard.get_suit())){
-                trump_count++;
+        Suit up_suit = upcard.get_suit();
+        if (round == 1) {
+            int face_ace_trump = 0;
+            for (const Card &c : hand) {
+                if (c.is_trump(up_suit) && c.is_face_or_ace()) {
+                    ++face_ace_trump;
+                }
             }
-        }
-        //round 1
-        if (trump_count >= 2){
-            order_up_suit = upcard.get_suit();
-            return true;
-        }
-
-        //round 2
-        if (round == 2 && trump_count >= 1){
-            order_up_suit = Suit_next(upcard.get_suit());
-            return true;
+            if (face_ace_trump >= 2) {
+                order_up_suit = up_suit;
+                return true;
+            }
+            return false;
         }
 
-        //screw the dealer (round 2 only)
-        if (is_dealer && round == 2){
-            order_up_suit = Suit_next(upcard.get_suit());
+        // round 2
+        Suit next = Suit_next(up_suit);
+        if (is_dealer) {
+            order_up_suit = next;
             return true;
+        }
+        for (const Card &c : hand) {
+            if (c.is_trump(next) && c.is_face_or_ace()) {
+                order_up_suit = next;
+                return true;
+            }
         }
         return false;
     }
     //add upcard to hand and discard lowest card
     void add_and_discard(const Card &upcard) override {
         add_card(upcard);
-        hand.pop_back();
+        Suit trump = upcard.get_suit();
+        size_t lowest = 0;
+        for (size_t i = 1; i < hand.size(); ++i) {
+            if (Card_less(hand[i], hand[lowest], trump)) {
+                lowest = i;
+            }
+        }
+        hand.erase(hand.begin() + lowest);
     }
     //lead card with highest suit (trump > non-trump) and rank
     Card lead_card(Suit trump) override {
@@ -106,8 +117,14 @@ public:
             return play;
         }
         //play lowest card if can't follow suit 
-        Card play = hand.front();
-        hand.erase(hand.begin());
+        size_t lowest = 0;
+        for (size_t i = 1; i < hand.size(); ++i) {
+            if (Card_less(hand[i], hand[lowest], trump)) {
+                lowest = i;
+            }
+        }
+        Card play = hand[lowest];
+        hand.erase(hand.begin() + lowest);
         return play;
     }
 };
