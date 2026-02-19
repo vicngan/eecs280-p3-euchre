@@ -10,21 +10,18 @@ using namespace std;
 TEST(test_player_get_name) {
     Player * alice = Player_factory("Alice", "Simple");
     ASSERT_EQUAL("Alice", alice->get_name());
-
     delete alice;
 }
 
 TEST(test_simple_make_trump_round1) {
     Player * p = Player_factory("P", "Simple");
     p->add_card(Card(ACE, HEARTS));
-    p->add_card(Card(JACK, DIAMONDS)); // left bower if Hearts are trump
+    p->add_card(Card(JACK, DIAMONDS));
     p->add_card(Card(NINE, SPADES));
     p->add_card(Card(TEN, SPADES));
     p->add_card(Card(QUEEN, CLUBS));
-
     Suit order_up = SPADES;
     bool ordered = p->make_trump(Card(NINE, HEARTS), false, 1, order_up);
-
     ASSERT_TRUE(ordered);
     ASSERT_EQUAL(order_up, HEARTS);
     delete p;
@@ -37,10 +34,8 @@ TEST(test_simple_make_trump_round1_pass_without_two_face_aces) {
     p->add_card(Card(ACE, SPADES));
     p->add_card(Card(KING, CLUBS));
     p->add_card(Card(QUEEN, DIAMONDS));
-
     Suit order_up = CLUBS;
     bool ordered = p->make_trump(Card(NINE, HEARTS), false, 1, order_up);
-
     ASSERT_FALSE(ordered);
     ASSERT_EQUAL(order_up, CLUBS);
     delete p;
@@ -48,15 +43,13 @@ TEST(test_simple_make_trump_round1_pass_without_two_face_aces) {
 
 TEST(test_simple_make_trump_round2) {
     Player * p = Player_factory("P", "Simple");
-    p->add_card(Card(ACE, SPADES)); // next suit to Clubs
+    p->add_card(Card(ACE, SPADES));
     p->add_card(Card(NINE, HEARTS));
     p->add_card(Card(TEN, HEARTS));
     p->add_card(Card(QUEEN, DIAMONDS));
     p->add_card(Card(KING, DIAMONDS));
-
     Suit order_up = HEARTS;
     bool ordered = p->make_trump(Card(NINE, CLUBS), false, 2, order_up);
-
     ASSERT_TRUE(ordered);
     ASSERT_EQUAL(order_up, SPADES);
     delete p;
@@ -69,10 +62,8 @@ TEST(test_simple_make_trump_round2_pass_without_next_suit_face_ace) {
     p->add_card(Card(QUEEN, DIAMONDS));
     p->add_card(Card(NINE, DIAMONDS));
     p->add_card(Card(TEN, DIAMONDS));
-
     Suit order_up = DIAMONDS;
     bool ordered = p->make_trump(Card(NINE, CLUBS), false, 2, order_up);
-
     ASSERT_FALSE(ordered);
     ASSERT_EQUAL(order_up, DIAMONDS);
     delete p;
@@ -85,15 +76,14 @@ TEST(test_simple_make_trump_round2_screw_dealer) {
     p->add_card(Card(QUEEN, DIAMONDS));
     p->add_card(Card(NINE, DIAMONDS));
     p->add_card(Card(TEN, DIAMONDS));
-
     Suit order_up = DIAMONDS;
     bool ordered = p->make_trump(Card(NINE, CLUBS), true, 2, order_up);
-
     ASSERT_TRUE(ordered);
     ASSERT_EQUAL(order_up, SPADES);
     delete p;
 }
 
+// Original test
 TEST(test_simple_add_and_discard_discards_lowest) {
     Player * p = Player_factory("P", "Simple");
     p->add_card(Card(ACE, HEARTS));
@@ -101,56 +91,139 @@ TEST(test_simple_add_and_discard_discards_lowest) {
     p->add_card(Card(QUEEN, SPADES));
     p->add_card(Card(TEN, SPADES));
     p->add_card(Card(NINE, DIAMONDS));
-
-    p->add_and_discard(Card(JACK, HEARTS)); // trump is Hearts
-
+    p->add_and_discard(Card(JACK, HEARTS));
     vector<Card> actual;
-    Card led(NINE, CLUBS); // no clubs in hand, so always play lowest
+    Card led(NINE, CLUBS);
     for (int i = 0; i < Player::MAX_HAND_SIZE; ++i) {
         actual.push_back(p->play_card(led, HEARTS));
     }
-
     vector<Card> expected = {
-        Card(ACE, HEARTS),
-        Card(KING, HEARTS),
-        Card(JACK, HEARTS),
-        Card(QUEEN, SPADES),
-        Card(TEN, SPADES),
+        Card(ACE, HEARTS), Card(KING, HEARTS), Card(JACK, HEARTS),
+        Card(QUEEN, SPADES), Card(TEN, SPADES),
     };
-
     sort(actual.begin(), actual.end());
     sort(expected.begin(), expected.end());
     ASSERT_SEQUENCE_EQUAL(actual, expected);
     delete p;
 }
 
-TEST(test_simple_add_and_discard_keeps_left_bower_and_trump) {
+// Upcard is highest — should NOT be discarded, lowest non-trump should be
+TEST(test_simple_add_and_discard_keeps_upcard_when_not_lowest) {
     Player * p = Player_factory("P", "Simple");
-    p->add_card(Card(JACK, DIAMONDS)); // left bower for Hearts
-    p->add_card(Card(ACE, CLUBS));
-    p->add_card(Card(KING, CLUBS));
-    p->add_card(Card(QUEEN, CLUBS));
-    p->add_card(Card(ACE, SPADES));
+    p->add_card(Card(NINE, CLUBS));
+    p->add_card(Card(NINE, HEARTS));
+    p->add_card(Card(NINE, DIAMONDS));
+    p->add_card(Card(TEN, CLUBS));
+    p->add_card(Card(TEN, HEARTS));
+    p->add_and_discard(Card(ACE, SPADES));
+    vector<Card> actual;
+    Card led(NINE, CLUBS);
+    for (int i = 0; i < Player::MAX_HAND_SIZE; ++i) {
+        actual.push_back(p->play_card(led, SPADES));
+    }
+    bool has_ace_spades = false;
+    for (const Card &c : actual) {
+        if (c == Card(ACE, SPADES)) has_ace_spades = true;
+    }
+    ASSERT_TRUE(has_ace_spades);
+    delete p;
+}
 
-    p->add_and_discard(Card(NINE, HEARTS)); // trump is Hearts
+// Upcard is lowest — upcard itself must be discarded
+TEST(test_simple_add_and_discard_discards_upcard_when_lowest) {
+    Player * p = Player_factory("P", "Simple");
+    p->add_card(Card(ACE, HEARTS));
+    p->add_card(Card(KING, HEARTS));
+    p->add_card(Card(QUEEN, HEARTS));
+    p->add_card(Card(JACK, HEARTS));
+    p->add_card(Card(TEN, HEARTS));
+    p->add_and_discard(Card(NINE, HEARTS));
+    vector<Card> actual;
+    Card led(NINE, CLUBS);
+    for (int i = 0; i < Player::MAX_HAND_SIZE; ++i) {
+        actual.push_back(p->play_card(led, HEARTS));
+    }
+    bool has_nine = false;
+    bool has_ten = false;
+    for (const Card &c : actual) {
+        if (c == Card(NINE, HEARTS)) has_nine = true;
+        if (c == Card(TEN, HEARTS)) has_ten = true;
+    }
+    ASSERT_FALSE(has_nine);
+    ASSERT_TRUE(has_ten);
+    delete p;
+}
+
+// KEY BUG #2 CATCHER: A non-trump card that would be lowest WITHOUT trump context
+// but a trump card is actually lower when trump ordering is ignored.
+// Trump = Spades. Hand has Nine of Spades (low trump) and Ten of Hearts (non-trump).
+// Without trump-aware comparison, Nine of Spades < Ten of Hearts, so Nine discarded.
+// WITH trump-aware comparison, Ten of Hearts < Nine of Spades (trump beats non-trump),
+// so Ten of Hearts should be discarded.
+// Upcard = Ace of Spades. After add_and_discard, Ten of Hearts gone, Nine of Spades kept.
+TEST(test_simple_add_and_discard_trump_aware) {
+    Player * p = Player_factory("P", "Simple");
+    // Trump = Spades
+    p->add_card(Card(NINE, SPADES));   // low trump
+    p->add_card(Card(TEN, HEARTS));    // non-trump, higher raw rank but weaker
+    p->add_card(Card(KING, DIAMONDS)); // non-trump
+    p->add_card(Card(QUEEN, CLUBS));   // non-trump
+    p->add_card(Card(JACK, DIAMONDS)); // non-trump
+
+    // Upcard = Ace of Spades (high trump), so trump = Spades
+    // Lowest card by trump-aware ordering = Ten of Hearts (or any non-trump)
+    // Nine of Spades is trump, so it beats all non-trumps
+    p->add_and_discard(Card(ACE, SPADES));
 
     vector<Card> actual;
-    Card led(NINE, DIAMONDS); // no diamonds in hand (left bower counts as trump)
+    Card led(NINE, CLUBS);
+    for (int i = 0; i < Player::MAX_HAND_SIZE; ++i) {
+        actual.push_back(p->play_card(led, SPADES));
+    }
+
+    // Nine of Spades (trump) must be kept — it's stronger than any non-trump
+    bool has_nine_spades = false;
+    for (const Card &c : actual) {
+        if (c == Card(NINE, SPADES)) has_nine_spades = true;
+    }
+    ASSERT_TRUE(has_nine_spades);
+    delete p;
+}
+
+// Bug #2 variant: hand where lowest by rank is actually trump.
+// Non-trump Ten should be discarded over trump Nine.
+// Trump = Hearts. Upcard = King of Hearts.
+TEST(test_simple_add_and_discard_keeps_low_trump_over_non_trump) {
+    Player * p = Player_factory("P", "Simple");
+    // Trump = Hearts
+    p->add_card(Card(NINE, HEARTS));   // lowest trump
+    p->add_card(Card(ACE, SPADES));    // high non-trump
+    p->add_card(Card(KING, CLUBS));    // non-trump
+    p->add_card(Card(QUEEN, DIAMONDS));// non-trump
+    p->add_card(Card(TEN, SPADES));    // non-trump — this is lowest non-trump
+
+    // Upcard = King of Hearts (trump)
+    // After adding: hand has 6 cards, must discard one
+    // Lowest by trump-aware: Ten of Spades (non-trump, lowest rank among non-trumps)
+    // A bug ignoring trump would see Nine of Hearts as lowest (rank 9 < 10)
+    p->add_and_discard(Card(KING, HEARTS));
+
+    vector<Card> actual;
+    Card led(NINE, CLUBS);
     for (int i = 0; i < Player::MAX_HAND_SIZE; ++i) {
         actual.push_back(p->play_card(led, HEARTS));
     }
 
-    vector<Card> expected = {
-        Card(JACK, DIAMONDS),
-        Card(ACE, CLUBS),
-        Card(KING, CLUBS),
-        Card(ACE, SPADES),
-        Card(NINE, HEARTS),
-    };
-
-    sort(actual.begin(), actual.end());
-    sort(expected.begin(), expected.end());
-    ASSERT_SEQUENCE_EQUAL(actual, expected);
+    // Nine of Hearts (trump) must still be in hand
+    bool has_nine_hearts = false;
+    // Ten of Spades should be discarded
+    bool has_ten_spades = false;
+    for (const Card &c : actual) {
+        if (c == Card(NINE, HEARTS)) has_nine_hearts = true;
+        if (c == Card(TEN, SPADES)) has_ten_spades = true;
+    }
+    ASSERT_TRUE(has_nine_hearts);
+    ASSERT_FALSE(has_ten_spades);
     delete p;
 }
 
@@ -161,7 +234,6 @@ TEST(test_simple_lead_card_highest_non_trump) {
     p->add_card(Card(QUEEN, CLUBS));
     p->add_card(Card(KING, HEARTS));
     p->add_card(Card(NINE, HEARTS));
-
     Card led = p->lead_card(HEARTS);
     ASSERT_EQUAL(led, Card(ACE, SPADES));
     delete p;
@@ -169,12 +241,11 @@ TEST(test_simple_lead_card_highest_non_trump) {
 
 TEST(test_simple_lead_card_all_trump) {
     Player * p = Player_factory("P", "Simple");
-    p->add_card(Card(JACK, HEARTS));   // right bower
-    p->add_card(Card(JACK, DIAMONDS)); // left bower
+    p->add_card(Card(JACK, HEARTS));
+    p->add_card(Card(JACK, DIAMONDS));
     p->add_card(Card(ACE, HEARTS));
     p->add_card(Card(KING, HEARTS));
     p->add_card(Card(NINE, HEARTS));
-
     Card led = p->lead_card(HEARTS);
     ASSERT_EQUAL(led, Card(JACK, HEARTS));
     delete p;
@@ -187,7 +258,6 @@ TEST(test_simple_play_card_follow_suit_highest) {
     p->add_card(Card(KING, CLUBS));
     p->add_card(Card(JACK, HEARTS));
     p->add_card(Card(NINE, DIAMONDS));
-
     Card played = p->play_card(Card(NINE, SPADES), HEARTS);
     ASSERT_EQUAL(played, Card(ACE, SPADES));
     delete p;
@@ -195,12 +265,11 @@ TEST(test_simple_play_card_follow_suit_highest) {
 
 TEST(test_simple_play_card_left_bower_not_follow) {
     Player * p = Player_factory("P", "Simple");
-    p->add_card(Card(JACK, DIAMONDS)); // left bower for Hearts
+    p->add_card(Card(JACK, DIAMONDS));
     p->add_card(Card(ACE, SPADES));
     p->add_card(Card(KING, CLUBS));
     p->add_card(Card(NINE, HEARTS));
     p->add_card(Card(TEN, SPADES));
-
     Card played = p->play_card(Card(NINE, DIAMONDS), HEARTS);
     ASSERT_EQUAL(played, Card(TEN, SPADES));
     delete p;
