@@ -43,6 +43,19 @@ TEST(suit_comparison){
     ASSERT_EQUAL(c3.get_suit(), DIAMONDS);
     ASSERT_EQUAL(c4.get_suit(), CLUBS);
 }
+
+TEST(card_equality){
+    Card a(ACE, SPADES);
+    Card b(ACE, SPADES);
+    Card c(ACE, HEARTS);
+    Card d(KING, SPADES);
+
+    ASSERT_TRUE(a == b);
+    ASSERT_FALSE(a == c);
+    ASSERT_FALSE(a == d);
+    ASSERT_TRUE(a != c);
+    ASSERT_TRUE(a != d);
+}
 TEST(is_face_or_ace){
     Card c1(ACE, HEARTS);
     Card c2(JACK, HEARTS);
