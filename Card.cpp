@@ -186,13 +186,13 @@ bool operator>=(const Card &lhs, const Card &rhs) {
 Suit Suit_next(Suit suit){
   switch (suit){
     case SPADES:
-      return HEARTS;
+      return CLUBS;
     case HEARTS:
-      return SPADES;
-    case CLUBS:
       return DIAMONDS;
+    case CLUBS:
+      return SPADES;
     case DIAMONDS:
-      return CLUBS; 
+      return HEARTS; 
     default:
       assert(false);
       return SPADES;

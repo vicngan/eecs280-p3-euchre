@@ -59,26 +59,32 @@ public:
     Card lead_card(Suit trump) override {
         assert(!hand.empty());
 
-        std::sort(hand.begin(), hand.end(),
-        [&](const Card &a, const Card &b){
-            return Card_less(a, b, trump);
-        });
-
-        for (const Card &c :hand){
-            if(c.is_trump(trump)){
-                //play highest trump card
-                Card lead = c; 
-                hand.erase(std::remove(hand.begin(), hand.end(), c), hand.end());
-                return lead;
-            } else {
-                //play highest non-trump card
-                Card lead = hand.back();
-                hand.pop_back();
-                return lead;
+        bool found_non_trump = false;
+        size_t best_non_trump = 0;
+        for (size_t i = 0; i < hand.size(); ++i) {
+            if (!hand[i].is_trump(trump)) {
+                if (!found_non_trump ||
+                    Card_less(hand[best_non_trump], hand[i], trump)) {
+                    best_non_trump = i;
+                    found_non_trump = true;
+                }
             }
         }
-        Card lead = hand.back();
-        hand.pop_back();
+
+        if (found_non_trump) {
+            Card lead = hand[best_non_trump];
+            hand.erase(hand.begin() + best_non_trump);
+            return lead;
+        }
+
+        size_t best_trump = 0;
+        for (size_t i = 1; i < hand.size(); ++i) {
+            if (Card_less(hand[best_trump], hand[i], trump)) {
+                best_trump = i;
+            }
+        }
+        Card lead = hand[best_trump];
+        hand.erase(hand.begin() + best_trump);
         return lead;
     }
     //play card when someone already led, otherwise play lowest
