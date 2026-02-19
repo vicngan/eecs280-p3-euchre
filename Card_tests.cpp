@@ -38,9 +38,10 @@ TEST(suit_comparison){
     Card c3(ACE, DIAMONDS);
     Card c4(ACE, CLUBS);
 
-    ASSERT_TRUE(c1.get_suit() < c2.get_suit());
-    ASSERT_TRUE(c2.get_suit() < c3.get_suit());
-    ASSERT_TRUE(c3.get_suit() < c4.get_suit());
+    ASSERT_EQUAL(c1.get_suit(), SPADES);
+    ASSERT_EQUAL(c2.get_suit(), HEARTS);
+    ASSERT_EQUAL(c3.get_suit(), DIAMONDS);
+    ASSERT_EQUAL(c4.get_suit(), CLUBS);
 }
 TEST(is_face_or_ace){
     Card c1(ACE, HEARTS);
@@ -116,8 +117,8 @@ TEST(left_bower_vs_trump){
     Card left_bower (JACK, SPADES); 
     Card trump_card (ACE, CLUBS);
 
-    ASSERT_TRUE(Card_less(left_bower, trump_card, trump));
-    ASSERT_FALSE(Card_less(trump_card, left_bower, trump));
+    ASSERT_TRUE(Card_less(trump_card, left_bower, trump));
+    ASSERT_FALSE(Card_less(left_bower, trump_card, trump));
 }
 
 TEST(led_suit_vs_trump){
