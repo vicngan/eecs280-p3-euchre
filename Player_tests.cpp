@@ -124,6 +124,36 @@ TEST(test_simple_add_and_discard_discards_lowest) {
     delete p;
 }
 
+TEST(test_simple_add_and_discard_keeps_left_bower_and_trump) {
+    Player * p = Player_factory("P", "Simple");
+    p->add_card(Card(JACK, DIAMONDS)); // left bower for Hearts
+    p->add_card(Card(ACE, CLUBS));
+    p->add_card(Card(KING, CLUBS));
+    p->add_card(Card(QUEEN, CLUBS));
+    p->add_card(Card(ACE, SPADES));
+
+    p->add_and_discard(Card(NINE, HEARTS)); // trump is Hearts
+
+    vector<Card> actual;
+    Card led(NINE, DIAMONDS); // no diamonds in hand (left bower counts as trump)
+    for (int i = 0; i < Player::MAX_HAND_SIZE; ++i) {
+        actual.push_back(p->play_card(led, HEARTS));
+    }
+
+    vector<Card> expected = {
+        Card(JACK, DIAMONDS),
+        Card(ACE, CLUBS),
+        Card(KING, CLUBS),
+        Card(ACE, SPADES),
+        Card(NINE, HEARTS),
+    };
+
+    sort(actual.begin(), actual.end());
+    sort(expected.begin(), expected.end());
+    ASSERT_SEQUENCE_EQUAL(actual, expected);
+    delete p;
+}
+
 TEST(test_simple_lead_card_highest_non_trump) {
     Player * p = Player_factory("P", "Simple");
     p->add_card(Card(ACE, SPADES));
