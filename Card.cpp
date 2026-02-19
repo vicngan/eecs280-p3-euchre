@@ -185,49 +185,71 @@ bool operator>=(const Card &lhs, const Card &rhs) {
 
 Suit Suit_next(Suit suit){
   switch (suit){
-    case SPADES:
-      return CLUBS;
-    case HEARTS:
-      return DIAMONDS;
-    case CLUBS:
-      return SPADES;
-    case DIAMONDS:
-      return HEARTS; 
-    default:
-      assert(false);
-      return SPADES;
-  }
-}
-bool Card_less(const Card &a, const Card &b, Suit trump){
-  if(a.is_trump(trump) && !b.is_trump(trump)){
-    return false;
-  } else if (!a.is_trump(trump) && b.is_trump(trump)){
-    return true;
-  } else if (a.is_trump(trump) && b.is_trump(trump)){
-    return a.get_rank() < b.get_rank();
-  } else { //if neither is a trump , then compare rank 
-    return a.get_rank() < b.get_rank(); 
+    case SPADES:   return CLUBS;
+    case CLUBS:    return SPADES;
+    case HEARTS:   return DIAMONDS;
+    case DIAMONDS: return HEARTS;
+    default: assert(false); return SPADES;
   }
 }
 
+bool Card_less(const Card &a, const Card &b, Suit trump) {
+  // trump vs non-trump
+  if (a.is_trump(trump) && !b.is_trump(trump)) return false;
+  if (!a.is_trump(trump) && b.is_trump(trump)) return true;
 
-bool Card_less(const Card &a, const Card &b, const Card &led_card, Suit trump){
-  if(a.get_rank() < b.get_rank() && a.get_suit(led_card.get_suit()) == led_card.get_suit()){
-    return a.get_rank() < b.get_rank(); 
-  } if (a.get_suit() == led_card.get_suit()){
-    return false;
-  } else if (b.get_suit() == led_card.get_suit()){
-    return true; 
-  } if(a.is_trump(trump) && !b.is_trump(trump)){
-    return false;
-  } else if(!a.is_trump(trump) && b.is_trump(trump)){
-    return true; 
-  } else if (a.is_trump(trump) && b.is_trump(trump)){
-    return a.get_rank() < b.get_rank();
-  } else{
-    return false;
+  // both trump
+  if (a.is_trump(trump) && b.is_trump(trump)) {
+    // Right bower highest
+    if (a.is_right_bower(trump)) return false;
+    if (b.is_right_bower(trump)) return true;
+
+    // Left bower second highest
+    if (a.is_left_bower(trump)) return false;
+    if (b.is_left_bower(trump)) return true;
+
+    // Remaining trump: compare by rank (A>K>Q>J>10>9)
+    if (a.get_rank() != b.get_rank()) {
+      return a.get_rank() < b.get_rank();
+    }
+
+    // Same rank trump (rare): break tie by suit (doesn't really matter, but consistent)
+    return a.get_suit() < b.get_suit();
   }
+
+  // neither trump: default ordering (rank then suit)
+  return a < b;
 }
+
+bool Card_less(const Card &a, const Card &b, const Card &led_card, Suit trump) {
+  // Normalize suits with trump (so left bower counts as trump suit)
+  Suit led = led_card.get_suit(trump);
+  Suit a_suit = a.get_suit(trump);
+  Suit b_suit = b.get_suit(trump);
+
+  bool a_trump = a.is_trump(trump);
+  bool b_trump = b.is_trump(trump);
+
+  // trump beats non-trump
+  if (a_trump && !b_trump) return false;
+  if (!a_trump && b_trump) return true;
+
+  // if neither is trump, led suit beats other suits
+  bool a_led = (a_suit == led);
+  bool b_led = (b_suit == led);
+
+  if (a_led && !b_led) return false;
+  if (!a_led && b_led) return true;
+
+  // if both trump, use trump comparison
+  if (a_trump && b_trump) {
+    return Card_less(a, b, trump);
+  }
+
+  // if both led (or both neither led nor trump), fallback to default
+  return a < b;
+}
+
 
 // NOTE: We HIGHLY recommend you check out the operator overloading
 // tutorial in the project spec before implementing
