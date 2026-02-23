@@ -66,3 +66,38 @@ int main(int argc, char* argv[]) {
     return 0; 
 }
 
+class Game {
+public:
+    // constructor implementation
+    Game(std::ifstream& fin, bool shuffle, int pointsToWin, 
+         const std::vector<std::string>& playerNames, 
+         const std::vector<std::string>& playerTypes);
+
+    //main game loop implementation
+    void play();
+
+    //destructor implementation
+    ~Game();
+
+private:
+    std::vector<Player*> players; // vector of player pointers
+    Pack pack; // pack of cards
+    bool shuffle; // whether to shuffle the pack
+    int pointsToWin; // points needed to win the game
+
+    //game state variables
+    int team0Points; // points for team 0
+    int team1Points; // points for team 1
+    int hand_number; // current hand number
+    int dealer_index; // index of the current dealer
+
+    //helper functions
+    void shufflePack(); // function to shuffle the pack
+    void dealCards(); // function to deal cards to players
+    void makeTrump(Suit &trump, int &order_up); // function to determine the trump suit
+    void playHand(Suit trump, int order_up); // function to play a hand of euchre
+    void scoreHand(int team0tricks, int team1tricks, int order_up); // function to score the hand and update points
+};
+
+
+
