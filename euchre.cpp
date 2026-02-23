@@ -3,7 +3,10 @@
 #include <string>
 #include <vector>
 #include <cstdlib>
-#include "game.h"
+
+#include "Player.hpp"
+#include "Pack.hpp"
+#include "Card.hpp"
 
 using namespace std;
 
@@ -90,6 +93,7 @@ private:
     int team1Points; // points for team 1
     int hand_number; // current hand number
     int dealer_index; // index of the current dealer
+    Card upcard; // the upcard dealt at the start of a hand
 
     //helper functions
     void shufflePack(); // function to shuffle the pack
@@ -98,6 +102,105 @@ private:
     void playHand(Suit trump, int order_up); // function to play a hand of euchre
     void scoreHand(int team0tricks, int team1tricks, int order_up); // function to score the hand and update points
 };
+// Implementation of Game class member functions
 
 
+Game::Game(std::ifstream& fin, bool shuffle, int pointsToWin, 
+           const std::vector<std::string>& playerNames, 
+           const std::vector<std::string>& playerTypes) {
+        // implementation of the constructor
+}
+void Game::shufflePack(){
+    // implementation of shuffling the pack
+    pack.shuffle();
+    pack.reset();
+}
+void Game::play() {
+    // implementation of the main game loop
+}
+void Game::dealCards() {
+    // implementation of dealing cards to players
+    int currentPlayer = (dealer_index + 1) % 4; // start dealing with the player to the left of the dealer
+
+    //define dealing batches 
+    int round1[] = {3,2,3,2};
+    int round2[] = {2,3,2,3};
+
+    //round 1 
+    for (int i = 0; i < 4; ++i){
+        int cardsToDeal = round1[i];
+        for (int j = 0; j < cardsToDeal; ++j){
+            players[currentPlayer]->add_card(pack.deal_one());
+        }
+        currentPlayer = (currentPlayer + 1) % 4;
+    }
+    //round 2
+    for (int i = 0; i < 4; ++i){
+        int cardsToDeal = round2[i];
+        for (int j = 0; j < cardsToDeal; ++j){
+            players[currentPlayer]->add_card(pack.deal_one());
+        }
+        currentPlayer = (currentPlayer + 1) % 4;
+    }
+    //deal the upcard
+    upcard = pack.deal_one();
+
+    //print 
+    std::cout << upcard << " turned up\n";
+
+}
+
+void Game::makeTrump(Suit &trump, int &order_up) {
+    // implementation of determining the trump suit
+    //round 1 
+    int currentPlayer = (dealer_index + 1) % 4; // start with the player to the left of the dealer
+
+    for (int i =0; i < 4; ++i){
+        bool isDealer = (currentPlayer == dealer_index);
+        Suit orderedSuit;
+        
+        //ask each player in turn if they want to order up the trump suit. If a player orders up, set the trump suit and break out of the loop. If all players pass, move on to round 2.
+        if (players[currentPlayer]->make_trump(upcard, isDealer, 1, orderedSuit)){
+            trump = orderedSuit;
+            order_up = currentPlayer % 2; //team 0 or team 1
+            
+            std::cout << players[currentPlayer]->get_name() << " orders up " << orderedSuit<< "\n";
+
+            //if trump is made, dealer must add the upcard to their hand and discard a card
+            players[dealer_index]->add_and_discard(upcard);
+
+            std::cout << "\n";
+            return;
+        } else {
+            std::cout << players[currentPlayer]->get_name() << " passes\n";
+        }
+        currentPlayer = (currentPlayer + 1) % 4;
+    }
+    //round 2(only if all 4 players pass in round 1)
+    currentPlayer = (dealer_index + 1) % 4; // reset to the player to the left of the dealer
+    for (int i =0; i < 4; ++i){
+        bool isDealer = (currentPlayer == dealer_index);
+        Suit orderedSuit;
+
+        if (players[currentPlayer]->make_trump(upcard, isDealer, 2, orderedSuit)){
+            trump = orderedSuit;
+            order_up = currentPlayer % 2; //team 0 or team 1
+
+            std::cout << players[currentPlayer]->get_name() << " orders up " << orderedSuit<< "\n";
+
+            std::cout << "\n";
+            return;
+        } else {
+            std::cout << players[currentPlayer]->get_name() << " passes\n";
+        }
+        currentPlayer = (currentPlayer + 1) % 4;
+    }
+}
+
+void Game::playHand(Suit trump, int order_up) {
+    // implementation of playing a hand of euchre
+}
+void Game::scoreHand(int team0tricks, int team1tricks, int order_up) {
+    // implementation of scoring the hand and updating points
+}
 
