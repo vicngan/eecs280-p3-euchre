@@ -117,6 +117,50 @@ void Game::shufflePack(){
 }
 void Game::play() {
     // implementation of the main game loop
+    int team0Points = 0;
+    int team1Points = 0;
+    int dealer_index = 0;
+    int hand_number = 0;
+
+    cout << players[dealer_index]->get_name() << " deals" << endl;
+
+    while (team0Points < pointsToWin && team1Points < pointsToWin) {
+        // reset and optionally shuffle the pack
+        if (shuffle) {
+            pack.shuffle();
+        }
+        pack.reset();
+
+        // deal cards and flip upcard
+        dealCards();
+
+        // determine trump suit and which team ordered it up
+        Suit trump;
+        int order_up; // 0 = team 0 ordered, 1 = team 1 ordered
+        makeTrump(trump, order_up);
+
+        // play the hand and score it
+        playHand(trump, order_up);
+
+        // check for a winner
+        if (team0Points >= pointsToWin) {
+            cout << players[0]->get_name() << " and " << players[2]->get_name()
+                 << " win!" << endl;
+            return;
+        }
+        if (team1Points >= pointsToWin) {
+            cout << players[1]->get_name() << " and " << players[3]->get_name()
+                 << " win!" << endl;
+            return;
+        }
+
+        // advance dealer for the next hand
+        dealer_index = (dealer_index + 1) % 4;
+        ++hand_number;
+        cout << players[dealer_index]->get_name() << " deals" << endl;
+    }
+}
+
 }
 void Game::dealCards() {
     // implementation of dealing cards to players
