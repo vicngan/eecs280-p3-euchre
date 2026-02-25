@@ -280,5 +280,44 @@ void Game::playHand(Suit trump, int order_up) {
 }
 void Game::scoreHand(int team0tricks, int team1tricks, int order_up) {
     // implementation of scoring the hand and updating points
+    int winning_team;
+    int pointsEarned;
+
+    if (team0tricks > team1tricks){
+        winning_team = 0;
+        pointsEarned = team0tricks;
+    } else {
+        winning_team = 1;
+        pointsEarned = team1tricks;
+    }
+
+    std::cout << players[winning_team]->get_name() << " and " 
+              << players[winning_team + 2]->get_name() << " win the hand\n";
+
+    if (winning_team == order_up){
+        if (pointsEarned == 5){
+            std::cout << "marched!\n";
+            if (winning_team == 0) {
+                team0Points += 2;
+            } else {
+                team1Points += 2;
+            }
+        } else {
+            if (winning_team == 0) {
+                team0Points += 1;
+            } else {
+                team1Points += 1;
+            }
+        }
+    } else {
+        if (winning_team == 0) {
+            team0Points += pointsEarned;
+        } else {
+            team1Points += pointsEarned;
+        } std::cout << "euchred!\n";
+    }
+    std::cout << players[0]->get_name() << " has " << team0Points << " points\n";
+    std::cout << players[1]->get_name() << " has " << team1Points << " points\n";
 }
+
 
