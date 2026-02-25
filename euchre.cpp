@@ -10,6 +10,12 @@
 
 using namespace std;
 
+static int run_game(std::ifstream &fin,
+                    bool shuffle,
+                    int pointsToWin,
+                    const std::vector<std::string> &playerNames,
+                    const std::vector<std::string> &playerTypes);
+
 int main(int argc, char* argv[]) {
     if (argc != 12){
         cout<< "Usage: euchre.exe PACK_FILENAME [shuffle|noshuffle] "
@@ -33,10 +39,10 @@ int main(int argc, char* argv[]) {
             << "NAME4 TYPE4" << endl;
         return 1;
     }
-    //validate player types; must be either "human" or "simple"
+    //validate player types; must be either "Human" or "Simple"
     for(int i = 5; i <= 11; i+=2){
         string playerType = argv[i];
-        if (playerType != "human" && playerType != "simple"){
+        if (playerType != "Human" && playerType != "Simple"){
             cout<< "Usage: euchre.exe PACK_FILENAME [shuffle|noshuffle] "
                 << "POINTS_TO_WIN NAME1 TYPE1 NAME2 TYPE2 NAME3 TYPE3 "
                 << "NAME4 TYPE4" << endl;
@@ -63,10 +69,7 @@ int main(int argc, char* argv[]) {
     vector<string> playerNames = {argv[4], argv[6], argv[8], argv[10]};
     vector<string> playerTypes = {argv[5], argv[7], argv[9], argv[11]};
     
-    // create the game object and start the game
-    Game game(fin, shuffle, pointsToWin, playerNames, playerTypes);
-    game.play();
-    return 0; 
+    return run_game(fin, shuffle, pointsToWin, playerNames, playerTypes);
 }
 
 class Game {
@@ -107,8 +110,11 @@ private:
 
 Game::Game(std::ifstream& fin, bool shuffle, int pointsToWin, 
            const std::vector<std::string>& playerNames, 
-           const std::vector<std::string>& playerTypes) {
+           const std::vector<std::string>& playerTypes):pack(fin), shuffle(shuffle), pointsToWin(pointsToWin) {
         // implementation of the constructor
+        for(int i = 0; i < 4; ++i){
+            players.push_back(Player_factory(playerNames[i], playerTypes[i]));
+        }
 }
 void Game::shufflePack(){
     // implementation of shuffling the pack
@@ -117,14 +123,15 @@ void Game::shufflePack(){
 }
 void Game::play() {
     // implementation of the main game loop
-    int team0Points = 0;
-    int team1Points = 0;
-    int dealer_index = 0;
-    int hand_number = 0;
-
-    cout << players[dealer_index]->get_name() << " deals" << endl;
+    team0Points = 0;
+    team1Points = 0;
+    dealer_index = 0;
+    hand_number = 0;
 
     while (team0Points < pointsToWin && team1Points < pointsToWin) {
+        cout << "Hand " << hand_number << "\n";
+        cout << players[dealer_index]->get_name() << " deals" << endl;
+
         // reset and optionally shuffle the pack
         if (shuffle) {
             pack.shuffle();
@@ -144,20 +151,23 @@ void Game::play() {
 
         // check for a winner
         if (team0Points >= pointsToWin) {
-            cout << players[0]->get_name() << " and " << players[2]->get_name()
-                 << " win!" << endl;
+            cout << players[0]->get_name() << " and " << players[2]->get_name() << " win!\n";
             return;
         }
         if (team1Points >= pointsToWin) {
-            cout << players[1]->get_name() << " and " << players[3]->get_name()
-                 << " win!" << endl;
+            cout << players[1]->get_name() << " and " << players[3]->get_name() << " win!\n";
             return;
         }
 
         // advance dealer for the next hand
         dealer_index = (dealer_index + 1) % 4;
         ++hand_number;
-        cout << players[dealer_index]->get_name() << " deals" << endl;
+    }
+}
+
+Game::~Game() {
+    for (Player *player : players) {
+        delete player;
     }
 }
 
@@ -248,9 +258,11 @@ void Game::playHand(Suit trump, int order_up) {
 
     int leader_index = (dealer_index + 1) % 4; 
     for (int trick = 0; trick < 5; ++trick){
+        
         //each play a card in turn, start with leader going clockwise
         Card ledCard = players[leader_index] -> lead_card(trump);
-        std::cout << players[leader_index] -> get_name() << "leads" << ledCard << "\n";
+        std::cout << ledCard << " led by " << players[leader_index]->get_name() << "\n";        
+        
         int winning_player = leader_index;
         Card highest_card = ledCard;
 
@@ -258,17 +270,14 @@ void Game::playHand(Suit trump, int order_up) {
             int current_player = (leader_index + i + 1) % 4; 
             Card currentCard = players[current_player] -> play_card(ledCard, trump);
 
-            std::cout<< currentCard << " played by " << players[current_player] -> get_name() << "\n";
-            //determine if current card wins the trick
-            
+            std::cout << currentCard << " played by " << players[current_player]->get_name() << "\n";            
             if (Card_less(highest_card, currentCard, ledCard, trump)){
                 highest_card = currentCard;
                 winning_player = current_player;
             }
         }
 
-        std::cout << players[winning_player] -> get_name() << " wins the trick\n\n";
-
+        std::cout << players[winning_player]->get_name() << " takes the trick\n\n";     
         if(winning_player % 2 == 0 || winning_player == 2){
             team0tricks++;
         } else {
@@ -296,7 +305,7 @@ void Game::scoreHand(int team0tricks, int team1tricks, int order_up) {
 
     if (winning_team == order_up){
         if (pointsEarned == 5){
-            std::cout << "marched!\n";
+            std::cout << "march!\n";
             if (winning_team == 0) {
                 team0Points += 2;
             } else {
@@ -310,14 +319,28 @@ void Game::scoreHand(int team0tricks, int team1tricks, int order_up) {
             }
         }
     } else {
+        std::cout << "euchred!\n";
         if (winning_team == 0) {
-            team0Points += pointsEarned;
+            team0Points += 2;
         } else {
-            team1Points += pointsEarned;
-        } std::cout << "euchred!\n";
+            team1Points += 2;
+        } 
     }
-    std::cout << players[0]->get_name() << " has " << team0Points << " points\n";
-    std::cout << players[1]->get_name() << " has " << team1Points << " points\n";
+    std::cout << players[0]->get_name() << " and " << players[2]->get_name() 
+              << " have " << team0Points << " points\n";
+              
+    std::cout << players[1]->get_name() << " and " << players[3]->get_name() 
+              << " have " << team1Points << " points\n";
+              
+    std::cout << "\n"; // Don't forget the extra empty line at the end of the hand!
 }
 
-
+static int run_game(std::ifstream &fin,
+                    bool shuffle,
+                    int pointsToWin,
+                    const std::vector<std::string> &playerNames,
+                    const std::vector<std::string> &playerTypes) {
+    Game game(fin, shuffle, pointsToWin, playerNames, playerTypes);
+    game.play();
+    return 0;
+}
