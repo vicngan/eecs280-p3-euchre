@@ -161,7 +161,6 @@ void Game::play() {
     }
 }
 
-}
 void Game::dealCards() {
     // implementation of dealing cards to players
     int currentPlayer = (dealer_index + 1) % 4; // start dealing with the player to the left of the dealer
@@ -243,6 +242,41 @@ void Game::makeTrump(Suit &trump, int &order_up) {
 
 void Game::playHand(Suit trump, int order_up) {
     // implementation of playing a hand of euchre
+
+    int team0tricks = 0;
+    int team1tricks = 0; 
+
+    int leader_index = (dealer_index + 1) % 4; 
+    for (int trick = 0; trick < 5; ++trick){
+        //each play a card in turn, start with leader going clockwise
+        Card ledCard = players[leader_index] -> lead_card(trump);
+        std::cout << players[leader_index] -> get_name() << "leads" << ledCard << "\n";
+        int winning_player = leader_index;
+        Card highest_card = ledCard;
+
+        for(int i = 0; i < 3; ++i){
+            int current_player = (leader_index + i + 1) % 4; 
+            Card currentCard = players[current_player] -> play_card(ledCard, trump);
+
+            std::cout<< currentCard << " played by " << players[current_player] -> get_name() << "\n";
+            //determine if current card wins the trick
+            
+            if (Card_less(highest_card, currentCard, ledCard, trump)){
+                highest_card = currentCard;
+                winning_player = current_player;
+            }
+        }
+
+        std::cout << players[winning_player] -> get_name() << " wins the trick\n\n";
+
+        if(winning_player % 2 == 0 || winning_player == 2){
+            team0tricks++;
+        } else {
+            team1tricks++;
+        }
+        leader_index = winning_player; // winner of the trick leads the next trick
+    }
+    scoreHand(team0tricks, team1tricks, order_up);
 }
 void Game::scoreHand(int team0tricks, int team1tricks, int order_up) {
     // implementation of scoring the hand and updating points
