@@ -44,7 +44,8 @@ void Pack::shuffle(){
         std::array<Card, PACK_SIZE> shuffled_cards;
         int T = 0; //index top half
         int B = PACK_SIZE/2; //index bottom half
-        for (int j = 0; j < PACK_SIZE; ++j){ //inner loop swap cards in top half [:size/2] with bottom [size/2:size]
+        // Interleave bottom and top halves (in-shuffle).
+        for (int j = 0; j < PACK_SIZE; ++j){
             if (j%2 == 0){ //even index, take card from bottom half
                 shuffled_cards[j] = cards[B++];
             } else { //odd index, take card from top half
@@ -64,7 +65,6 @@ bool Pack::empty() const{
         return false;
     }
 }
-
 
 
 

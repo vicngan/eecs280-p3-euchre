@@ -10,11 +10,15 @@
 
 using namespace std;
 
+struct PlayerSpec {
+    std::string name;
+    std::string type;
+};
+
 static int run_game(std::ifstream &fin,
                     bool shuffle,
                     int pointsToWin,
-                    const std::vector<std::string> &playerNames,
-                    const std::vector<std::string> &playerTypes);
+                    const std::vector<PlayerSpec> &playerSpecs);
 
 int main(int argc, char* argv[]) {
     if (argc != 12){
@@ -66,18 +70,23 @@ int main(int argc, char* argv[]) {
     // determine whether to shuffle the pack based on the command line argument
     bool shuffle = (shuffleOption == "shuffle");
     
-    vector<string> playerNames = {argv[4], argv[6], argv[8], argv[10]};
-    vector<string> playerTypes = {argv[5], argv[7], argv[9], argv[11]};
-    
-    return run_game(fin, shuffle, pointsToWin, playerNames, playerTypes);
+    vector<PlayerSpec> playerSpecs = {
+        {argv[4], argv[5]},
+        {argv[6], argv[7]},
+        {argv[8], argv[9]},
+        {argv[10], argv[11]},
+    };
+
+    return run_game(fin, shuffle, pointsToWin, playerSpecs);
 }
 
 class Game {
 public:
     // constructor implementation
-    Game(std::ifstream& fin, bool shuffle, int pointsToWin, 
-         const std::vector<std::string>& playerNames, 
-         const std::vector<std::string>& playerTypes);
+    Game(std::ifstream& fin,
+         bool shuffle,
+         int pointsToWin,
+         const std::vector<PlayerSpec> &playerSpecs);
 
     //main game loop implementation
     void play();
@@ -101,19 +110,25 @@ private:
     //helper functions
     void shufflePack(); // function to shuffle the pack
     void dealCards(); // function to deal cards to players
-    void makeTrump(Suit &trump, int &order_up); // function to determine the trump suit
+    void makeTrump(Suit &trump, int &order_up);
     void playHand(Suit trump, int order_up); // function to play a hand of euchre
-    void scoreHand(int team0tricks, int team1tricks, int order_up); // function to score the hand and update points
+    void scoreHand(int team0tricks,
+                   int team1tricks,
+                   int order_up);
 };
 // Implementation of Game class member functions
 
 
-Game::Game(std::ifstream& fin, bool shuffle, int pointsToWin, 
-           const std::vector<std::string>& playerNames, 
-           const std::vector<std::string>& playerTypes):pack(fin), shuffle(shuffle), pointsToWin(pointsToWin) {
+Game::Game(std::ifstream& fin,
+           bool shuffle,
+           int pointsToWin,
+           const std::vector<PlayerSpec> &playerSpecs)
+    : pack(fin), shuffle(shuffle), pointsToWin(pointsToWin) {
         // implementation of the constructor
-        for(int i = 0; i < 4; ++i){
-            players.push_back(Player_factory(playerNames[i], playerTypes[i]));
+        for (int i = 0; i < 4; ++i) {
+            players.push_back(
+                Player_factory(playerSpecs[i].name, playerSpecs[i].type)
+            );
         }
 }
 void Game::shufflePack(){
@@ -151,11 +166,15 @@ void Game::play() {
 
         // check for a winner
         if (team0Points >= pointsToWin) {
-            cout << players[0]->get_name() << " and " << players[2]->get_name() << " win!\n";
+            cout << players[0]->get_name()
+                 << " and " << players[2]->get_name()
+                 << " win!\n";
             return;
         }
         if (team1Points >= pointsToWin) {
-            cout << players[1]->get_name() << " and " << players[3]->get_name() << " win!\n";
+            cout << players[1]->get_name()
+                 << " and " << players[3]->get_name()
+                 << " win!\n";
             return;
         }
 
@@ -173,7 +192,8 @@ Game::~Game() {
 
 void Game::dealCards() {
     // implementation of dealing cards to players
-    int currentPlayer = (dealer_index + 1) % 4; // start dealing with the player to the left of the dealer
+    // Start dealing with the player to the left of the dealer.
+    int currentPlayer = (dealer_index + 1) % 4;
 
     //define dealing batches 
     int round1[] = {3,2,3,2};
@@ -206,20 +226,23 @@ void Game::dealCards() {
 void Game::makeTrump(Suit &trump, int &order_up) {
     // implementation of determining the trump suit
     //round 1 
-    int currentPlayer = (dealer_index + 1) % 4; // start with the player to the left of the dealer
+    // Start with the player to the left of the dealer.
+    int currentPlayer = (dealer_index + 1) % 4;
 
     for (int i =0; i < 4; ++i){
         bool isDealer = (currentPlayer == dealer_index);
         Suit orderedSuit;
         
-        //ask each player in turn if they want to order up the trump suit. If a player orders up, set the trump suit and break out of the loop. If all players pass, move on to round 2.
+        // Ask each player in turn if they want to order up trump.
+        // If all players pass, move on to round 2.
         if (players[currentPlayer]->make_trump(upcard, isDealer, 1, orderedSuit)){
             trump = orderedSuit;
             order_up = currentPlayer % 2; //team 0 or team 1
             
-            std::cout << players[currentPlayer]->get_name() << " orders up " << orderedSuit<< "\n";
+            std::cout << players[currentPlayer]->get_name()
+                      << " orders up " << orderedSuit << "\n";
 
-            //if trump is made, dealer must add the upcard to their hand and discard a card
+            // If trump is made, dealer must add upcard and discard one.
             players[dealer_index]->add_and_discard(upcard);
 
             std::cout << "\n";
@@ -230,7 +253,8 @@ void Game::makeTrump(Suit &trump, int &order_up) {
         currentPlayer = (currentPlayer + 1) % 4;
     }
     //round 2(only if all 4 players pass in round 1)
-    currentPlayer = (dealer_index + 1) % 4; // reset to the player to the left of the dealer
+    // Reset to the player to the left of the dealer.
+    currentPlayer = (dealer_index + 1) % 4;
     for (int i =0; i < 4; ++i){
         bool isDealer = (currentPlayer == dealer_index);
         Suit orderedSuit;
@@ -239,7 +263,8 @@ void Game::makeTrump(Suit &trump, int &order_up) {
             trump = orderedSuit;
             order_up = currentPlayer % 2; //team 0 or team 1
 
-            std::cout << players[currentPlayer]->get_name() << " orders up " << orderedSuit<< "\n";
+            std::cout << players[currentPlayer]->get_name()
+                      << " orders up " << orderedSuit << "\n";
 
             std::cout << "\n";
             return;
@@ -260,30 +285,34 @@ void Game::playHand(Suit trump, int order_up) {
     for (int trick = 0; trick < 5; ++trick){
         
         //each play a card in turn, start with leader going clockwise
-        Card ledCard = players[leader_index] -> lead_card(trump);
-        std::cout << ledCard << " led by " << players[leader_index]->get_name() << "\n";        
+        Card ledCard = players[leader_index]->lead_card(trump);
+        std::cout << ledCard << " led by "
+                  << players[leader_index]->get_name() << "\n";
         
         int winning_player = leader_index;
         Card highest_card = ledCard;
 
         for(int i = 0; i < 3; ++i){
             int current_player = (leader_index + i + 1) % 4; 
-            Card currentCard = players[current_player] -> play_card(ledCard, trump);
-
-            std::cout << currentCard << " played by " << players[current_player]->get_name() << "\n";            
+            Card currentCard = players[current_player]->play_card(ledCard,
+                                                                  trump);
+            std::cout << currentCard << " played by "
+                      << players[current_player]->get_name() << "\n";
             if (Card_less(highest_card, currentCard, ledCard, trump)){
                 highest_card = currentCard;
                 winning_player = current_player;
             }
         }
 
-        std::cout << players[winning_player]->get_name() << " takes the trick\n\n";     
+        std::cout << players[winning_player]->get_name()
+                  << " takes the trick\n\n";
         if(winning_player % 2 == 0 || winning_player == 2){
             team0tricks++;
         } else {
             team1tricks++;
         }
-        leader_index = winning_player; // winner of the trick leads the next trick
+        // Winner of the trick leads the next trick.
+        leader_index = winning_player;
     }
     scoreHand(team0tricks, team1tricks, order_up);
 }
@@ -332,15 +361,15 @@ void Game::scoreHand(int team0tricks, int team1tricks, int order_up) {
     std::cout << players[1]->get_name() << " and " << players[3]->get_name() 
               << " have " << team1Points << " points\n";
               
-    std::cout << "\n"; // Don't forget the extra empty line at the end of the hand!
+    // Extra empty line at the end of each hand.
+    std::cout << "\n";
 }
 
 static int run_game(std::ifstream &fin,
                     bool shuffle,
                     int pointsToWin,
-                    const std::vector<std::string> &playerNames,
-                    const std::vector<std::string> &playerTypes) {
-    Game game(fin, shuffle, pointsToWin, playerNames, playerTypes);
+                    const std::vector<PlayerSpec> &playerSpecs) {
+    Game game(fin, shuffle, pointsToWin, playerSpecs);
     game.play();
     return 0;
 }

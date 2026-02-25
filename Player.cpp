@@ -24,7 +24,10 @@ public:
         std::sort(hand.begin(), hand.end());
     }
     //make trump if have two or more trump cards, otherwise pass
-    bool make_trump(const Card &upcard, bool is_dealer, int round, Suit &order_up_suit) const override{
+    bool make_trump(const Card &upcard,
+                    bool is_dealer,
+                    int round,
+                    Suit &order_up_suit) const override {
         Suit up_suit = upcard.get_suit();
         if (round == 1) {
             int face_ace_trump = 0;
@@ -109,9 +112,11 @@ public:
         } 
         if (!follow_suit_cards.empty()){
             //play highest card that follows suit
-            std::sort(follow_suit_cards.begin(), follow_suit_cards.end(), [&](const Card &a, const Card &b){
-                return Card_less(a,b , trump);
-            });
+            std::sort(follow_suit_cards.begin(),
+                      follow_suit_cards.end(),
+                      [&](const Card &a, const Card &b) {
+                          return Card_less(a, b, trump);
+                      });
             Card play = follow_suit_cards.back();
             hand.erase(std::remove(hand.begin(), hand.end(), play), hand.end());
             return play;
@@ -135,8 +140,9 @@ private:
     std::vector<Card> hand;
 
     void print_hand() const {
-        for (size_t i = 0; i < hand.size(); ++i){
-            cout << "Human" << name << "hand:" << "["<<i<<"]" << hand[i] << "\n";
+        for (size_t i = 0; i < hand.size(); ++i) {
+            cout << "Human player " << name << "'s hand: ["
+                 << i << "] " << hand[i] << "\n";
         }
     }
     
@@ -152,9 +158,13 @@ public:
         std::sort(hand.begin(), hand.end());
     }
 
-    bool make_trump(const Card &upcard, bool is_dealer, int round, Suit &order_up_suit) const override{
+    bool make_trump(const Card &upcard,
+                    bool is_dealer,
+                    int round,
+                    Suit &order_up_suit) const override {
         print_hand(); 
-        cout << "Player" << name << "enter suit to order up " << upcard.get_suit() << " or pass: \n";
+        cout << "Human player " << name
+             << ", please enter a suit, or \"pass\":\n";
         string choice;
         cin >> choice;
         if (choice == "pass"){
@@ -167,16 +177,20 @@ public:
 
     void add_and_discard(const Card &upcard) override{
         print_hand();
-        cout << "Player" << name << "enter index of card to discard: \n";
+        cout << "Discard upcard: [-1]\n";
+        cout << "Human player " << name
+             << ", please select a card to discard:\n";
         int index; 
-        cin>> index;
-        add_card(upcard);
-        hand.erase(hand.begin() + index);
+        cin >> index;
+        if (index != -1) {
+            hand.erase(hand.begin() + index);
+            add_card(upcard);
+        }
     }
 
     Card lead_card(Suit trump) override{
         print_hand();
-        cout << "Player" << name << "enter index of card to lead: \n";
+        cout << "Human player " << name << ", please select a card:\n";
         int index; 
         cin >> index; 
         Card lead = hand[index];
@@ -186,7 +200,7 @@ public:
 
     Card play_card(const Card &led_card, Suit trump) override{
         print_hand();
-        cout << "Player" << name << "enter index of card to play: \n";
+        cout << "Human player " << name << ", please select a card:\n";
         int index; 
         cin >> index; 
         Card play = hand[index];
